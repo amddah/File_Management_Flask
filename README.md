@@ -41,7 +41,8 @@ source venv/bin/activate
     flask run
 ## Screenshot
 
-![Screenshot 1](./screen.jpg)
+![Screenshot 1](./screen1.jpg)
+![Screenshot 2](./screen2.jpg)
 
 ## License
 
