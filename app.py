@@ -15,11 +15,14 @@ db_config = {
 def connect_db():
     return pymysql.connect(**db_config)
 
-@app.route('/test')
-def test():
-    return "test"
+
 @app.route('/')
 def index():
+        return render_template('index.html')
+    
+
+@app.route('/filePage',methods=['GET'])
+def filePage():
     try:
         # Connexion à la base de données
         connection = connect_db()
@@ -34,7 +37,7 @@ def index():
         connection.close()
 
         # Rendre le modèle HTML avec les résultats
-        return render_template('index.html', resultats=resultats)
+        return render_template('file.html', resultats=resultats)
     except Exception as e:
         # Gérez les erreurs de base de données
         return jsonify({'error': 'Erreur de base de données: ' + str(e)})
@@ -72,31 +75,22 @@ def upload():
                     return jsonify({'error': 'Erreur de base de données: ' + str(e)})
             else:
                 return jsonify({'error': 'Erreur lors du téléchargement du fichier.'})
-@app.route('/download/<int:file_id>', methods=['GET'])
-def download(file_id):
+
+@app.route('/delete/<int:file_id>', methods=['GET'])
+def delete(file_id):
     try:
         # Connexion à la base de données
         connection = connect_db()
         cursor = connection.cursor(pymysql.cursors.DictCursor)
-
-        # Exécutez la requête SQL pour obtenir les informations du fichier
-        cursor.execute("SELECT FileName, FileType, file FROM Files WHERE ID = %s", (file_id,))
-        fichier = cursor.fetchone()
+        cursor.execute("DELETE FROM Files WHERE ID = %s", (file_id,))
+        connection.commit()
 
         # Fermez la connexion et le curseur
         cursor.close()
         connection.close()
 
-        # Vérifiez si le fichier existe
-        if fichier:
-            return send_file(
-                io.BytesIO(fichier['file']),
-                mimetype=fichier['FileType'],
-                as_attachment=True,
-                download_name=fichier['FileName']
-            )
-        else:
-            return jsonify({'error': 'Fichier non trouvé.'})
+
+        return redirect(url_for('filePage'))
     except Exception as e:
         # Gérez les erreurs de base de données
         return jsonify({'error': 'Erreur de base de données: ' + str(e)})
